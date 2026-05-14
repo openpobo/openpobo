@@ -5,10 +5,10 @@ export async function onRequest(context){
 	try{
 		let { slug } = context.params;
 
-		// ====================== SANITIZE SLUG ======================
+		// ====================== SANITIZE ======================
 		slug = sanitizeSlug(slug);
 
-		// ====================== FETCH DATA ======================
+		// ====================== FETCH ======================
 		let post = null;
 
 		try{
@@ -18,15 +18,30 @@ export async function onRequest(context){
 		const title = post?.title || formatSlug(slug);
 		const kategori = post?.kategori || "Blog";
 
-         const kategoriText = `🔥 ${kategori}`;
-         const badgeWidth = (kategoriText.length * 18) + 60;
+		// ====================== CATEGORY ======================
+		const kategoriText = `🔥 ${kategori}`;
 
-		// ====================== AUTO CATEGORY COLOR ======================
+		const badgePadding = 60;
+		const badgeWidth = (kategoriText.length * 18) + badgePadding;
+
+		// ====================== COLORS ======================
 		const categoryColor = stringToColor(kategori);
 
 		// ====================== SITE ======================
 		const siteName = SITE.name || "LebahHack";
 		const logo = "🤖";
+
+		// ====================== DOTS ======================
+		const dots = Array.from({length:7}).map((_,row)=>
+			Array.from({length:10}).map((_,col)=>`
+<circle
+cx="${20 + (col * 26)}"
+cy="${520 + (row * 26)}"
+r="4"
+fill="${categoryColor}"
+/>
+`).join("")
+		).join("");
 
 		// ====================== SVG ======================
 		const svg = `
@@ -34,54 +49,82 @@ export async function onRequest(context){
 
 <defs>
 
+<!-- Background -->
 <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
 <stop offset="0%" stop-color="${categoryColor}"/>
+<stop offset="45%" stop-color="#0f172a"/>
 <stop offset="100%" stop-color="#020617"/>
 </linearGradient>
 
-<linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
-<stop offset="0%" stop-color="${categoryColor}"/>
-<stop offset="100%" stop-color="#22d3ee"/>
+<!-- Accent -->
+<linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0%" stop-color="#ff6b6b"/>
+<stop offset="50%" stop-color="#ec4899"/>
+<stop offset="100%" stop-color="#3b82f6"/>
 </linearGradient>
 
+<!-- Glass -->
 <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
-<stop offset="0%" stop-color="rgba(255,255,255,0.12)"/>
+<stop offset="0%" stop-color="rgba(255,255,255,0.10)"/>
 <stop offset="100%" stop-color="rgba(255,255,255,0.03)"/>
 </linearGradient>
 
+<!-- Planet Glow -->
+<radialGradient id="planetGlow" cx="50%" cy="50%" r="50%">
+<stop offset="0%" stop-color="${categoryColor}" stop-opacity="0.95"/>
+<stop offset="100%" stop-color="${categoryColor}" stop-opacity="0"/>
+</radialGradient>
+
+<!-- Blur -->
 <filter id="blur">
-<feGaussianBlur stdDeviation="80"/>
+<feGaussianBlur stdDeviation="90"/>
 </filter>
 
+<!-- Shadow -->
 <filter id="shadow">
-<feDropShadow dx="0" dy="10" stdDeviation="14" flood-opacity="0.35"/>
+<feDropShadow
+dx="0"
+dy="10"
+stdDeviation="12"
+flood-opacity="0.35"
+/>
 </filter>
 
 </defs>
 
-<!-- Background -->
-<rect width="1200" height="630" rx="30" fill="url(#bg)"/>
+<!-- BG -->
+<rect width="1200" height="630" fill="url(#bg)"/>
 
-<!-- Glow -->
+<!-- Planet -->
 <circle
-cx="980"
-cy="120"
+cx="1040"
+cy="60"
 r="240"
+fill="url(#planetGlow)"
+opacity="0.55"
+/>
+
+<!-- Glow Left -->
+<circle
+cx="120"
+cy="120"
+r="260"
 fill="${categoryColor}"
+opacity="0.18"
+filter="url(#blur)"
+/>
+
+<!-- Glow Bottom -->
+<circle
+cx="1150"
+cy="620"
+r="260"
+fill="#2563eb"
 opacity="0.25"
 filter="url(#blur)"
 />
 
-<circle
-cx="180"
-cy="560"
-r="180"
-fill="#ffffff"
-opacity="0.05"
-filter="url(#blur)"
-/>
-
-<!-- Glass Container -->
+<!-- Glass Card -->
 <rect
 x="40"
 y="40"
@@ -89,53 +132,59 @@ width="1120"
 height="550"
 rx="28"
 fill="url(#glass)"
-stroke="rgba(255,255,255,0.08)"
+stroke="rgba(255,255,255,0.18)"
+stroke-width="2"
 />
 
 <!-- Grid -->
-<g opacity="0.04">
-<line x1="0" y1="100" x2="1200" y2="100" stroke="#fff"/>
-<line x1="0" y1="300" x2="1200" y2="300" stroke="#fff"/>
-<line x1="0" y1="500" x2="1200" y2="500" stroke="#fff"/>
+<g opacity="0.05">
 
-<line x1="200" y1="0" x2="200" y2="630" stroke="#fff"/>
-<line x1="400" y1="0" x2="400" y2="630" stroke="#fff"/>
-<line x1="600" y1="0" x2="600" y2="630" stroke="#fff"/>
-<line x1="800" y1="0" x2="800" y2="630" stroke="#fff"/>
-<line x1="1000" y1="0" x2="1000" y2="630" stroke="#fff"/>
+<line x1="0" y1="120" x2="1200" y2="120" stroke="#fff"/>
+<line x1="0" y1="300" x2="1200" y2="300" stroke="#fff"/>
+<line x1="0" y1="480" x2="1200" y2="480" stroke="#fff"/>
+
+<line x1="180" y1="0" x2="180" y2="630" stroke="#fff"/>
+<line x1="360" y1="0" x2="360" y2="630" stroke="#fff"/>
+<line x1="540" y1="0" x2="540" y2="630" stroke="#fff"/>
+<line x1="720" y1="0" x2="720" y2="630" stroke="#fff"/>
+<line x1="900" y1="0" x2="900" y2="630" stroke="#fff"/>
+</g>
+
+<!-- Dots -->
+<g opacity="0.25">
+${dots}
 </g>
 
 <!-- Category -->
 <rect
 x="90"
-y="70"
-rx="18"
-ry="18"
+y="58"
+rx="20"
+ry="20"
 width="${badgeWidth}"
-height="56"
+height="64"
 fill="${categoryColor}"
-opacity="0.9"
 />
 
 <text
-x="125"
-y="107"
+x="118"
+y="100"
 fill="white"
-font-size="26"
+font-size="28"
 font-weight="bold"
 font-family="sans-serif">
 ${escapeXML(kategoriText)}
 </text>
 
-<!-- Brand Top Right -->
+<!-- Site -->
 <rect
 x="760"
 y="58"
 width="360"
 height="64"
-rx="18"
+rx="20"
 fill="rgba(255,255,255,0.08)"
-stroke="rgba(255,255,255,0.08)"
+stroke="rgba(255,255,255,0.12)"
 />
 
 <text
@@ -153,11 +202,11 @@ font-family="sans-serif">
 x="90"
 y="250"
 fill="white"
-font-size="64"
+font-size="66"
 font-weight="bold"
 font-family="sans-serif"
 filter="url(#shadow)">
-${wrapText(title,24)}
+${wrapText(title,22)}
 </text>
 
 <!-- Accent Line -->
@@ -165,10 +214,9 @@ ${wrapText(title,24)}
 x="90"
 y="420"
 width="320"
-height="5"
-rx="10"
+height="8"
+rx="99"
 fill="url(#accent)"
-opacity="0.9"
 />
 
 <!-- Right Icon -->
@@ -176,7 +224,9 @@ opacity="0.9"
 cx="980"
 cy="330"
 r="120"
-fill="rgba(255,255,255,0.08)"
+fill="rgba(255,255,255,0.10)"
+stroke="rgba(255,255,255,0.15)"
+stroke-width="2"
 />
 
 <text
@@ -190,16 +240,16 @@ ${logo}
 <text
 x="90"
 y="560"
-fill="#cbd5e1"
+fill="#d1d5db"
 font-size="24"
 font-family="sans-serif">
-${SITE.domain}
+🌐 ${SITE.domain}
 </text>
 
 <text
-x="840"
+x="860"
 y="560"
-fill="#cbd5e1"
+fill="#d1d5db"
 font-size="22"
 font-family="sans-serif">
 AI • Teknologi • Viral
@@ -242,10 +292,12 @@ function escapeXML(str = ""){
 
 function wrapText(text,maxLen){
 	const words = text.split(" ");
+
 	let lines = [];
 	let current = "";
 
 	for(let w of words){
+
 		if((current + w).length > maxLen){
 			lines.push(current.trim());
 			current = w + " ";
@@ -257,7 +309,9 @@ function wrapText(text,maxLen){
 	lines.push(current.trim());
 
 	return lines.map((line,i)=>
-		`<tspan x="90" dy="${i === 0 ? 0 : 72}">
+`<tspan
+x="90"
+dy="${i === 0 ? 0 : 78}">
 ${escapeXML(line)}
 </tspan>`
 	).join("");
@@ -266,15 +320,17 @@ ${escapeXML(line)}
 // ====================== AUTO COLOR ======================
 
 function stringToColor(str = ""){
+
 	const palette = [
+		"#ff4d6d",
+		"#ff6b6b",
 		"#8b5cf6",
-		"#ec4899",
 		"#06b6d4",
+		"#3b82f6",
+		"#14b8a6",
 		"#22c55e",
 		"#f59e0b",
-		"#ef4444",
-		"#3b82f6",
-		"#14b8a6"
+		"#ec4899"
 	];
 
 	let hash = 0;
