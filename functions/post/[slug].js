@@ -70,10 +70,17 @@ const schema = `
 `;
 
 return layout({
+
+  post,
+
   title: post.title,
+
   description: desc,
+
   canonical: canonical("/post/" + slug),
+
   image: og,
+
   schema,
 
   content: `
@@ -100,7 +107,7 @@ return layout({
     ${related.map(p => `
       <div class="card">
         <a href="/post/${sanitizeSlug(p.slug)}">
-            ${cardImage(`/og/${sanitizeSlug(p.slug)}`, p.title)}
+          ${cardImage(`/og/${sanitizeSlug(p.slug)}`, p.title)}
           <h4>${p.title}</h4>
         </a>
       </div>
@@ -108,6 +115,7 @@ return layout({
 
   </div>
   `
+
 });
 
 }catch(e){
