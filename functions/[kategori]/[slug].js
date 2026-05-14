@@ -1,138 +1,87 @@
 import { layout } from "../../lib/render";
 
 import {
-SITE,
-canonical,
-ogImage as buildOg,
-sanitizeSlug,
-stripHTML,
-readingTime,
-postImage,
-cardImage
+	SITE,
+	canonical,
+	ogImage as buildOg,
+	sanitizeSlug,
+	stripHTML,
+	readingTime,
+	postImage,
+	cardImage
 } from "../../lib/config";
 
-import {
-getPosts,
-getPost
-} from "../../lib/api";
+import { getPosts,getPost } from "../../lib/api";
 
 export async function onRequest(context){
+	try{
 
-try{
+		let { kategori,slug } = context.params;
 
-let {
-kategori,
-slug
-} = context.params;
+		kategori = sanitizeSlug(kategori);
+		slug = sanitizeSlug(slug);
 
-kategori =
-sanitizeSlug(kategori);
+		// ====================== GET POST ======================
+		const post = await getPost(slug);
 
-slug =
-sanitizeSlug(slug);
+		// ====================== VALIDASI ======================
+		if(!post || sanitizeSlug(post.kategori) !== kategori){
+			return new Response(
+				"404 Not Found",
+				{ status:404 }
+			);
+		}
 
-// ======================
-// GET POST
-// ======================
+		// ====================== RELATED POST ======================
+		const posts = await getPosts();
 
-const post =
-await getPost(slug);
+		const related = posts
 
-// ======================
-// VALIDASI
-// ======================
+			.filter(p=>
 
-if(
-!post ||
-sanitizeSlug(post.kategori) !== kategori
-){
+				sanitizeSlug(p.slug) !== slug &&
 
-return new Response(
-"404 Not Found",
-{ status:404 }
-);
+				sanitizeSlug(p.kategori) === kategori
 
-}
+			)
 
-// ======================
-// RELATED POST
-// ======================
+			.sort(() => 0.5 - Math.random())
 
-const posts =
-await getPosts();
+			.slice(0,6);
 
-const related =
-posts
+		// ====================== AUTO INTERNAL LINK ======================
+		post.content = autoLink(
+			post.content,
+			related
+		);
 
-.filter(p =>
+		// ====================== SEO ======================
+		const read = readingTime(post.content);
 
-sanitizeSlug(p.slug) !== slug &&
+		const desc = stripHTML(post.content)
+			.slice(0,160);
 
-sanitizeSlug(p.kategori) === kategori
+		const postUrl = `/${kategori}/${slug}`;
 
-)
-
-.sort(() => 0.5 - Math.random())
-
-.slice(0,6);
-
-// ======================
-// AUTO INTERNAL LINK
-// ======================
-
-post.content =
-autoLink(
-post.content,
-related
-);
-
-// ======================
-// SEO
-// ======================
-
-const read =
-readingTime(post.content);
-
-const desc =
-stripHTML(post.content)
-.slice(0,160);
-
-const postUrl =
-`/${kategori}/${slug}`;
-
-const breadcrumb = `
-
+		const breadcrumb = `
 <nav class="breadcrumb">
-
 <a href="/">Home</a>
-
 ›
-
 <a href="/kategori/${kategori}">
 ${post.kategori}
 </a>
-
 ›
-
 <span>
 ${post.title}
 </span>
-
 </nav>
-
 `;
 
-const og =
-buildOg(slug);
+		const og = buildOg(slug);
 
-// ======================
-// JSON LD
-// ======================
-
-const schema = `
-
+		// ====================== JSON LD ======================
+		const schema = `
 <script type="application/ld+json">
-
 {
 "@context":"https://schema.org",
 "@type":"BlogPosting",
@@ -149,75 +98,60 @@ const schema = `
 "name":"${SITE.name}"
 }
 }
-
 </script>
 
 <script type="application/ld+json">
-
 {
 "@context":"https://schema.org",
 "@type":"BreadcrumbList",
 "itemListElement":[
-
 {
 "@type":"ListItem",
 "position":1,
 "name":"Home",
 "item":"${SITE.domain}/"
 },
-
 {
 "@type":"ListItem",
 "position":2,
 "name":"${post.kategori}",
 "item":"${SITE.domain}/kategori/${kategori}"
 },
-
 {
 "@type":"ListItem",
 "position":3,
 "name":"${post.title}",
 "item":"${SITE.domain}${postUrl}"
 }
-
 ]
 }
-
 </script>
-
 `;
 
-// ======================
-// RENDER
-// ======================
+		// ====================== RENDER ======================
+		return layout({
 
-return layout({
+			post,
 
-post,
+			title:post.title,
 
-title:
-post.title,
+			description:desc,
 
-description:
-desc,
+			canonical:canonical(postUrl),
 
-canonical:
-canonical(postUrl),
+			image:og,
 
-image:
-og,
+			schema,
 
-schema,
-
-content: `
+			content:`
 
 ${breadcrumb}
 
 <article class="post">
 
 ${postImage(
-og,
-post.title
+	og,
+	post.title
 )}
 
 <h1>
@@ -249,8 +183,8 @@ ${related.map(p => `
 <a href="/${sanitizeSlug(p.kategori)}/${sanitizeSlug(p.slug)}">
 
 ${cardImage(
-`/og/${sanitizeSlug(p.slug)}`,
-p.title
+	`/og/${sanitizeSlug(p.slug)}`,
+	p.title
 )}
 
 <h4>
@@ -266,140 +200,98 @@ ${p.title}
 </div>
 
 `
+		});
 
-});
+	}catch(e){
 
-}catch(e){
+		return new Response(
+			"Error: " + e.message,
+			{
+				status:500
+			}
+		);
 
-return new Response(
-
-"Error: " + e.message,
-
-{
-status:500
+	}
 }
 
-);
+// ====================== AUTO LINK ======================
+function autoLink(content = "",related = []){
+	if(!content || !related.length){
+		return content;
+	}
 
-}
+	const MAX_LINK = 8;
 
-}
+	let total = 0;
 
-// ======================
-// AUTO LINK
-// ======================
+	const parts = content.split(
+		/(<[^>]+>)/g
+	);
 
-function autoLink(
-content = "",
-related = []
-){
+	return parts.map(part => {
 
-if(
-!content ||
-!related.length
-){
-return content;
-}
+		if(part.startsWith("<")){
+			return part;
+		}
 
-const MAX_LINK = 8;
+		let text = part;
 
-let total = 0;
+		for(const p of related){
 
-const parts =
-content.split(
-/(<[^>]+>)/g
-);
+			if(total >= MAX_LINK){
+				break;
+			}
 
-return parts.map(part => {
+			const title = String(
+				p.title || ""
+			).trim();
 
-if(
-part.startsWith("<")
-){
-return part;
-}
+			const slug = sanitizeSlug(
+				p.slug || ""
+			);
 
-let text = part;
+			const kategori = sanitizeSlug(
+				p.kategori || ""
+			);
 
-for(const p of related){
+			if(!title || !slug){
+				continue;
+			}
 
-if(total >= MAX_LINK){
-break;
-}
+			const keyword = title
+				.split(" ")
+				.slice(0,2)
+				.join(" ")
+				.toLowerCase();
 
-const title =
-String(
-p.title || ""
-).trim();
+			if(!keyword || keyword.length < 4){
+				continue;
+			}
 
-const slug =
-sanitizeSlug(
-p.slug || ""
-);
+			const escaped = keyword.replace(
+				/[.*+?^${}()|[\]\\]/g,
+				"\\$&"
+			);
 
-const kategori =
-sanitizeSlug(
-p.kategori || ""
-);
+			const regex = new RegExp(
+				`\\b(${escaped})\\b`,
+				"i"
+			);
 
-if(
-!title ||
-!slug
-){
-continue;
-}
+			if(regex.test(text)){
 
-const keyword =
-title
+				text = text.replace(
+					regex,
+					`<a href="/${kategori}/${slug}">$1</a>`
+				);
 
-.split(" ")
+				total++;
 
-.slice(0,2)
+			}
 
-.join(" ")
+		}
 
-.toLowerCase();
+		return text;
 
-if(
-!keyword ||
-keyword.length < 4
-){
-continue;
-}
-
-const escaped =
-keyword.replace(
-
-/[.*+?^${}()|[\]\\]/g,
-
-"\\$&"
-
-);
-
-const regex =
-new RegExp(
-`\\b(${escaped})\\b`,
-"i"
-);
-
-if(regex.test(text)){
-
-text =
-text.replace(
-
-regex,
-
-`<a href="/${kategori}/${slug}">$1</a>`
-
-);
-
-total++;
-
-}
-
-}
-
-return text;
-
-}).join("");
-
+	}).join("");
 }
