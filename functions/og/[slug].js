@@ -8,7 +8,7 @@ export async function onRequest(context){
 		// ====================== SANITIZE SLUG ======================
 		slug = sanitizeSlug(slug);
 
-		// ====================== FETCH DATA (PAKAI API LAYER) ======================
+		// ====================== FETCH DATA ======================
 		let post = null;
 
 		try{
@@ -18,64 +18,190 @@ export async function onRequest(context){
 		const title = post?.title || formatSlug(slug);
 		const kategori = post?.kategori || "Blog";
 
-		// ====================== SVG PREMIUM (VALID) ======================
+		// ====================== AUTO CATEGORY COLOR ======================
+		const categoryColor = stringToColor(kategori);
+
+		// ====================== SITE ======================
+		const siteName = SITE.name || "LebahHack";
+		const logo = "🤖";
+
+		// ====================== SVG ======================
 		const svg = `
 <svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+
 <defs>
+
 <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-<stop offset="0%" stop-color="#020617"/>
-<stop offset="100%" stop-color="#0f172a"/>
+<stop offset="0%" stop-color="${categoryColor}"/>
+<stop offset="100%" stop-color="#020617"/>
 </linearGradient>
 
 <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
-<stop offset="0%" stop-color="#4f46e5"/>
+<stop offset="0%" stop-color="${categoryColor}"/>
 <stop offset="100%" stop-color="#22d3ee"/>
 </linearGradient>
 
 <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
-<stop offset="0%" stop-color="rgba(255,255,255,0.15)"/>
-<stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
+<stop offset="0%" stop-color="rgba(255,255,255,0.12)"/>
+<stop offset="100%" stop-color="rgba(255,255,255,0.03)"/>
 </linearGradient>
 
 <filter id="blur">
 <feGaussianBlur stdDeviation="80"/>
 </filter>
+
+<filter id="shadow">
+<feDropShadow dx="0" dy="10" stdDeviation="14" flood-opacity="0.35"/>
+</filter>
+
 </defs>
 
-<rect width="1200" height="630" fill="url(#bg)"/>
+<!-- Background -->
+<rect width="1200" height="630" rx="30" fill="url(#bg)"/>
 
-<circle cx="1000" cy="120" r="260" fill="url(#accent)" opacity="0.25" filter="url(#blur)"/>
-<circle cx="200" cy="550" r="200" fill="#4f46e5" opacity="0.15" filter="url(#blur)"/>
+<!-- Glow -->
+<circle
+cx="980"
+cy="120"
+r="240"
+fill="${categoryColor}"
+opacity="0.25"
+filter="url(#blur)"
+/>
 
-<rect x="50" y="50" width="1100" height="530" rx="24" fill="url(#glass)" stroke="rgba(255,255,255,0.1)"/>
+<circle
+cx="180"
+cy="560"
+r="180"
+fill="#ffffff"
+opacity="0.05"
+filter="url(#blur)"
+/>
 
-<g opacity="0.05">
+<!-- Glass Container -->
+<rect
+x="40"
+y="40"
+width="1120"
+height="550"
+rx="28"
+fill="url(#glass)"
+stroke="rgba(255,255,255,0.08)"
+/>
+
+<!-- Grid -->
+<g opacity="0.04">
 <line x1="0" y1="100" x2="1200" y2="100" stroke="#fff"/>
 <line x1="0" y1="300" x2="1200" y2="300" stroke="#fff"/>
 <line x1="0" y1="500" x2="1200" y2="500" stroke="#fff"/>
+
+<line x1="200" y1="0" x2="200" y2="630" stroke="#fff"/>
+<line x1="400" y1="0" x2="400" y2="630" stroke="#fff"/>
+<line x1="600" y1="0" x2="600" y2="630" stroke="#fff"/>
+<line x1="800" y1="0" x2="800" y2="630" stroke="#fff"/>
+<line x1="1000" y1="0" x2="1000" y2="630" stroke="#fff"/>
 </g>
 
 <!-- Category -->
-<rect x="100" y="100" rx="14" ry="14" width="260" height="48" fill="#4f46e5"/>
-<text x="130" y="132" fill="white" font-size="22" font-family="sans-serif">
-${escapeXML(kategori)}
+<rect
+x="90"
+y="70"
+rx="18"
+ry="18"
+width="240"
+height="56"
+fill="${categoryColor}"
+opacity="0.9"
+/>
+
+<text
+x="125"
+y="107"
+fill="white"
+font-size="26"
+font-weight="bold"
+font-family="sans-serif">
+🔥 ${escapeXML(kategori)}
+</text>
+
+<!-- Brand Top Right -->
+<rect
+x="760"
+y="45"
+width="360"
+height="60"
+rx="18"
+fill="rgba(255,255,255,0.08)"
+stroke="rgba(255,255,255,0.08)"
+/>
+
+<text
+x="790"
+y="84"
+fill="white"
+font-size="34"
+font-weight="bold"
+font-family="sans-serif">
+⚡ ${escapeXML(siteName)}
 </text>
 
 <!-- Title -->
-<text x="700" y="260" fill="white" font-size="60" font-weight="bold" font-family="sans-serif">
-${wrapText(title,26)}
+<text
+x="90"
+y="250"
+fill="white"
+font-size="64"
+font-weight="bold"
+font-family="sans-serif"
+filter="url(#shadow)">
+${wrapText(title,24)}
 </text>
 
-<rect x="100" y="420" width="300" height="4" fill="url(#accent)" opacity="0.8"/>
+<!-- Accent Line -->
+<rect
+x="90"
+y="420"
+width="320"
+height="5"
+rx="10"
+fill="url(#accent)"
+opacity="0.9"
+/>
+
+<!-- Right Icon -->
+<circle
+cx="980"
+cy="340"
+r="120"
+fill="rgba(255,255,255,0.08)"
+/>
+
+<text
+x="930"
+y="375"
+font-size="90">
+${logo}
+</text>
 
 <!-- Footer -->
-<text x="100" y="520" fill="#94a3b8" font-size="22" font-family="sans-serif">
+<text
+x="90"
+y="560"
+fill="#cbd5e1"
+font-size="24"
+font-family="sans-serif">
 ${SITE.domain}
 </text>
 
-<text x="980" y="560" fill="#94a3b8" font-size="18">
-⚡ ${SITE.name}
+<text
+x="840"
+y="560"
+fill="#cbd5e1"
+font-size="22"
+font-family="sans-serif">
+AI • Teknologi • Viral
 </text>
+
 </svg>
 `;
 
@@ -85,14 +211,20 @@ ${SITE.domain}
 				"Cache-Control":"public, max-age=86400"
 			}
 		});
+
 	}catch(err){
-		return new Response("OG Error: " + err.message,{ status:500 });
+		return new Response("OG Error: " + err.message,{
+			status:500
+		});
 	}
 }
 
-// ====================== UTIL (TIDAK DIUBAH) ======================
+// ====================== UTIL ======================
+
 function formatSlug(slug = ""){
-	return decodeURIComponent(slug).replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+	return decodeURIComponent(slug)
+		.replace(/-/g," ")
+		.replace(/\b\w/g,c=>c.toUpperCase());
 }
 
 function escapeXML(str = ""){
@@ -121,5 +253,32 @@ function wrapText(text,maxLen){
 
 	lines.push(current.trim());
 
-	return lines.map((line,i)=>`<tspan x="60" dy="${i === 0 ? 0 : 60}">${escapeXML(line)}</tspan>`).join("");
+	return lines.map((line,i)=>
+		`<tspan x="90" dy="${i === 0 ? 0 : 72}">
+${escapeXML(line)}
+</tspan>`
+	).join("");
+}
+
+// ====================== AUTO COLOR ======================
+
+function stringToColor(str = ""){
+	const palette = [
+		"#8b5cf6",
+		"#ec4899",
+		"#06b6d4",
+		"#22c55e",
+		"#f59e0b",
+		"#ef4444",
+		"#3b82f6",
+		"#14b8a6"
+	];
+
+	let hash = 0;
+
+	for(let i = 0; i < str.length; i++){
+		hash = str.charCodeAt(i) + ((hash << 5) - hash);
+	}
+
+	return palette[Math.abs(hash % palette.length)];
 }
