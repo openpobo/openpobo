@@ -1,76 +1,67 @@
-import { getPosts } from "../lib/api";import { SITE,sanitizeSlug } from "../lib/config";
+import { getPosts } from "../lib/api";
+import { SITE,sanitizeSlug } from "../lib/config";
 
 export async function onRequest(){
+	try{
+		const posts = await getPosts()
+			.catch(()=>[]);
 
-try{
+		if(!Array.isArray(posts)){
+			return new Response(
+				"Invalid posts",
+				{ status:500 }
+			);
+		}
 
-const posts = await getPosts()
-.catch(()=>[]);
+		// ====================== REMOVE DUPLICATE ======================
+		const used = new Set();
 
-if(!Array.isArray(posts)){
+		const urls = posts
+			.filter(p=>{
 
-return new Response(
-"Invalid posts",
-{ status:500 }
-);
+				const slug = sanitizeSlug(
+					p?.slug || ""
+				);
 
-}
+				const kategori = sanitizeSlug(
+					p?.kategori || "umum"
+				);
 
-// ======================
-// REMOVE DUPLICATE
-// ======================
-const used = new Set();
-
-const urls = posts
-
-.filter(p=>{
-
-const slug = sanitizeSlug(
-p?.slug || ""
-);
-
-const kategori = sanitizeSlug(
-p?.kategori || "umum"
-);
-
-const key =
+				const key =
 kategori + "/" + slug;
 
-if(
-!slug ||
-used.has(key)
-){
-return false;
-}
+				if(!slug || used.has(key)){
+					return false;
+				}
 
-used.add(key);
+				used.add(key);
 
-return true;
+				return true;
 
-})
+			})
 
-.map(p=>{
+			.map(p=>{
 
-const slug = sanitizeSlug(
-p.slug
-);
+				const slug = sanitizeSlug(
+					p.slug
+				);
 
-const kategori = sanitizeSlug(
-p.kategori || "umum"
-);
+				const kategori = sanitizeSlug(
+					p.kategori || "umum"
+				);
 
-const lastmod =
+				const lastmod =
 p.updated ||
 p.date ||
 new Date().toISOString();
 
-const postUrl =
+				const postUrl =
 `${SITE.domain}/${kategori}/${slug}`;
 
-const imageUrl =
+				const imageUrl =
 `${SITE.domain}/og/${slug}`;
 
-return `
+				return `
 <url>
 
 <loc>${postUrl}</loc>
@@ -81,9 +72,7 @@ return `
 
 <priority>0.8</priority>
 
-<image:image
-xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
->
+<image:image xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
 <image:loc>
 ${imageUrl}
@@ -93,15 +82,12 @@ ${imageUrl}
 
 </url>
 `;
+			})
 
-})
+			.join("");
 
-.join("");
-
-// ======================
-// XML
-// ======================
-const xml =
+		// ====================== XML ======================
+		const xml =
 `<?xml version="1.0" encoding="UTF-8"?>
 
 <urlset
@@ -110,70 +96,49 @@ xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
 >
 
 <url>
-
 <loc>${SITE.domain}/</loc>
-
 <changefreq>hourly</changefreq>
-
 <priority>1.0</priority>
-
 </url>
 
 <url>
-
 <loc>${SITE.domain}/kategori/seo</loc>
-
 <changefreq>daily</changefreq>
-
 <priority>0.9</priority>
-
 </url>
 
 <url>
-
 <loc>${SITE.domain}/kategori/blog</loc>
-
 <changefreq>daily</changefreq>
-
 <priority>0.9</priority>
-
 </url>
 
 <url>
-
 <loc>${SITE.domain}/kategori/teknologi</loc>
-
 <changefreq>daily</changefreq>
-
 <priority>0.9</priority>
-
 </url>
 
 ${urls}
 
 </urlset>`;
 
-return new Response(
-xml,
-{
-headers:{
-"content-type":
-"application/xml;charset=UTF-8",
+		return new Response(
+			xml,
+			{
+				headers:{
+					"content-type":"application/xml;charset=UTF-8",
+					"cache-control":"public,max-age=3600"
+				}
+			}
+		);
 
-"cache-control":
-"public,max-age=3600"
-}
-}
-);
+	}catch(e){
 
-}catch(e){
+		return new Response(
+			"Sitemap Error: " + e.message,
+			{ status:500 }
+		);
 
-return new Response(
-"Sitemap Error: " +
-e.message,
-{ status:500 }
-);
-
-}
-
+	}
 }
