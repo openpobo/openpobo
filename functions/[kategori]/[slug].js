@@ -1,14 +1,13 @@
 import { layout } from "../../lib/render";
 import {
-  SITE,
-  canonical,
-  ogImage as buildOg,
-  sanitizeSlug,
-  stripHTML,
-  readingTime,
-  postImage,
-  cardImage,
-  kategoriUrl
+	SITE,
+	canonical,
+	ogImage as buildOg,
+	sanitizeSlug,
+	stripHTML,
+	readingTime,
+	postImage,
+	cardImage
 } from "../../lib/config";
 
 import { getPosts, getPost } from "../../lib/api";
@@ -23,18 +22,17 @@ export async function onRequest(context){
 		const post = await getPost(slug);
 
 		if(!post || sanitizeSlug(post.kategori) !== kategori){
-			return new Response("404 Not Found", { status:404 });
+			return new Response("404 Not Found",{ status:404 });
 		}
 
 		const posts = await getPosts();
 
-		const related = posts
-			.filter(p =>
-				sanitizeSlug(p.slug) !== slug &&
-				sanitizeSlug(p.kategori) === kategori
-			)
-			.sort(() => 0.5 - Math.random())
-			.slice(0, 6);
+		const related = posts.filter(p =>
+			sanitizeSlug(p.slug) !== slug &&
+			sanitizeSlug(p.kategori) === kategori
+		)
+		.sort(() => 0.5 - Math.random())
+		.slice(0,6);
 
 		const safeContent = autoLink(post.content, related);
 
@@ -48,9 +46,9 @@ export async function onRequest(context){
 <nav class="breadcrumb">
 	<a href="/">Home</a>
 	›
-	<a href="${kategoriUrl(kategori)}">${post.kategori}</a>
+	<a href="/kategori/${kategori}">${escapeHtml(post.kategori)}</a>
 	›
-	<span>${post.title}</span>
+	<span>${escapeHtml(post.title)}</span>
 </nav>
 `;
 
@@ -59,8 +57,8 @@ export async function onRequest(context){
 {
 	"@context":"https://schema.org",
 	"@type":"BlogPosting",
-	"headline":"${escapeHtml(post.title)}",
-	"description":"${escapeHtml(desc)}",
+	"headline":"${escapeJson(post.title)}",
+	"description":"${escapeJson(desc)}",
 	"image":"${og}",
 	"mainEntityOfPage":"${canonical(postUrl)}",
 	"author":{
@@ -73,6 +71,33 @@ export async function onRequest(context){
 	}
 }
 </script>
+
+<script type="application/ld+json">
+{
+	"@context":"https://schema.org",
+	"@type":"BreadcrumbList",
+	"itemListElement":[
+		{
+			"@type":"ListItem",
+			"position":1,
+			"name":"Home",
+			"item":"${SITE.domain}/"
+		},
+		{
+			"@type":"ListItem",
+			"position":2,
+			"name":"${post.kategori}",
+			"item":"${SITE.domain}/kategori/${kategori}"
+		},
+		{
+			"@type":"ListItem",
+			"position":3,
+			"name":"${post.title}",
+			"item":"${SITE.domain}${postUrl}"
+		}
+	]
+}
+</script>
 `;
 
 		return layout({
@@ -82,7 +107,7 @@ export async function onRequest(context){
 			canonical: canonical(postUrl),
 			image: og,
 			schema,
-			content: `
+			content:`
 ${breadcrumb}
 
 <article class="post">
@@ -104,7 +129,7 @@ ${breadcrumb}
 	<div class="card">
 		<a href="/${sanitizeSlug(p.kategori)}/${sanitizeSlug(p.slug)}">
 			${cardImage(`/og/${sanitizeSlug(p.slug)}`, p.title)}
-			<h4>${escapeHtml(p.title)}</h4>
+			<h4>${p.title}</h4>
 		</a>
 	</div>
 	`).join("")}
@@ -113,6 +138,6 @@ ${breadcrumb}
 		});
 
 	}catch(e){
-		return new Response("Error: " + e.message, { status:500 });
+		return new Response("Error: " + e.message,{ status:500 });
 	}
 }
