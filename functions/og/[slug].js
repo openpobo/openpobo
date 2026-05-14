@@ -2,7 +2,9 @@ import { SITE, sanitizeSlug } from "../../lib/config";
 import { getPost } from "../../lib/api";
 
 export async function onRequest(context){
+
 	try{
+
 		let { slug } = context.params;
 
 		// ====================== SANITIZE ======================
@@ -28,7 +30,7 @@ export async function onRequest(context){
 		const categoryColor = stringToColor(kategori);
 
 		// ====================== SITE ======================
-		const siteName = SITE.name || "LebahHack";
+		const siteName = SITE.name || "Auto Blog";
 		const logo = "🤖";
 
 		// ====================== DOTS ======================
@@ -71,7 +73,8 @@ fill="${categoryColor}"
 
 <!-- Planet Glow -->
 <radialGradient id="planetGlow" cx="50%" cy="50%" r="50%">
-<stop offset="0%" stop-color="${categoryColor}" stop-opacity="0.95"/>
+<stop offset="0%" stop-color="${categoryColor}" stop-opacity="1"/>
+<stop offset="55%" stop-color="${categoryColor}" stop-opacity="0.55"/>
 <stop offset="100%" stop-color="${categoryColor}" stop-opacity="0"/>
 </radialGradient>
 
@@ -97,11 +100,30 @@ flood-opacity="0.35"
 
 <!-- Planet -->
 <circle
-cx="1040"
-cy="60"
-r="240"
+cx="1080"
+cy="40"
+r="280"
 fill="url(#planetGlow)"
-opacity="0.55"
+opacity="0.9"
+/>
+
+<!-- Planet Ring -->
+<circle
+cx="1080"
+cy="40"
+r="285"
+fill="none"
+stroke="rgba(255,255,255,0.08)"
+stroke-width="2"
+/>
+
+<!-- Planet Highlight -->
+<circle
+cx="980"
+cy="20"
+r="180"
+fill="rgba(255,255,255,0.06)"
+filter="url(#blur)"
 />
 
 <!-- Glow Left -->
@@ -266,21 +288,27 @@ AI • Teknologi • Viral
 		});
 
 	}catch(err){
-		return new Response("OG Error: " + err.message,{
-			status:500
-		});
+
+		return new Response(
+			"OG Error: " + err.message,
+			{ status:500 }
+		);
+
 	}
 }
 
 // ====================== UTIL ======================
 
 function formatSlug(slug = ""){
+
 	return decodeURIComponent(slug)
 		.replace(/-/g," ")
 		.replace(/\b\w/g,c=>c.toUpperCase());
+
 }
 
 function escapeXML(str = ""){
+
 	return str.replace(/[<>&'"]/g,c=>({
 		"<":"&lt;",
 		">":"&gt;",
@@ -288,9 +316,11 @@ function escapeXML(str = ""){
 		"'":"&apos;",
 		'"':"&quot;"
 	}[c]));
+
 }
 
 function wrapText(text,maxLen){
+
 	const words = text.split(" ");
 
 	let lines = [];
@@ -299,10 +329,14 @@ function wrapText(text,maxLen){
 	for(let w of words){
 
 		if((current + w).length > maxLen){
+
 			lines.push(current.trim());
 			current = w + " ";
+
 		}else{
+
 			current += w + " ";
+
 		}
 	}
 
@@ -315,6 +349,7 @@ dy="${i === 0 ? 0 : 78}">
 ${escapeXML(line)}
 </tspan>`
 	).join("");
+
 }
 
 // ====================== AUTO COLOR ======================
@@ -336,8 +371,11 @@ function stringToColor(str = ""){
 	let hash = 0;
 
 	for(let i = 0; i < str.length; i++){
+
 		hash = str.charCodeAt(i) + ((hash << 5) - hash);
+
 	}
 
 	return palette[Math.abs(hash % palette.length)];
+
 }
