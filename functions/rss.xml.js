@@ -1,53 +1,46 @@
-import { getPosts } from "../lib/api";import { SITE,sanitizeSlug,stripHTML } from "../lib/config";
+import { getPosts } from "../lib/api";
+import { SITE,sanitizeSlug,stripHTML } from "../lib/config";
 
 export async function onRequest(){
+	try{
+		const posts = await getPosts();
 
-try{
+		const items = posts
+			.slice(0,20)
+			.map(p=>{
 
-const posts = await getPosts();
+				const kategori = sanitizeSlug(
+					p.kategori || "umum"
+				);
 
-const items = posts
+				const slug = sanitizeSlug(
+					p.slug
+				);
 
-.slice(0,20)
-
-.map(p=>{
-
-const kategori = sanitizeSlug(
-p.kategori || "umum"
-);
-
-const slug = sanitizeSlug(
-p.slug
-);
-
-const url =
+				const url =
 `${SITE.domain}/${kategori}/${slug}`;
 
-const desc = escapeXML(
-stripHTML(p.content || "")
-.slice(0,160)
-);
+				const desc = escapeXML(
+					stripHTML(p.content || "")
+						.slice(0,160)
+				);
 
-const title = escapeXML(
-p.title || "Untitled"
-);
+				const title = escapeXML(
+					p.title || "Untitled"
+				);
 
-const image =
+				const image =
 `${SITE.domain}/og/${slug}`;
 
-const pubDate = new Date(
-p.date || Date.now()
-).toUTCString();
+				const pubDate = new Date(
+					p.date || Date.now()
+				).toUTCString();
 
-return `
+				return `
 <item>
-
 <title>${title}</title>
-
 <link>${url}</link>
-
 <guid>${url}</guid>
-
 <pubDate>${pubDate}</pubDate>
 
 <description>
@@ -59,19 +52,13 @@ return `
 
 </item>
 `;
+			})
+			.join("");
 
-})
-
-.join("");
-
-return new Response(
-
+		return new Response(
 `<?xml version="1.0" encoding="UTF-8"?>
 
-<rss
-version="2.0"
-xmlns:atom="http://www.w3.org/2005/Atom"
->
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 
 <channel>
 
@@ -85,60 +72,37 @@ ${escapeXML(SITE.description)}
 
 <language>id</language>
 
-<atom:link
-href="${SITE.domain}/rss.xml"
-rel="self"
-type="application/rss+xml"
-/>
+<atom:link href="${SITE.domain}/rss.xml" rel="self" type="application/rss+xml"/>
 
 ${items}
 
 </channel>
 
 </rss>`,
+			{
+				headers:{
+					"content-type":"application/xml;charset=UTF-8",
+					"cache-control":"public,max-age=3600"
+				}
+			}
+		);
 
-{
-headers:{
-"content-type":
-"application/xml;charset=UTF-8",
-
-"cache-control":
-"public,max-age=3600"
-}
-}
-
-);
-
-}catch(e){
-
-return new Response(
-"RSS Error: " + e.message,
-{ status:500 }
-);
-
+	}catch(e){
+		return new Response(
+			"RSS Error: " + e.message,
+			{ status:500 }
+		);
+	}
 }
 
-}
-
-// ======================
-// ESCAPE XML
-// ======================
+// ====================== ESCAPE XML ======================
 function escapeXML(str=""){
-
-return String(str)
-
-.replace(/[<>&'"]/g,c=>({
-
-"<":"&lt;",
-
-">":"&gt;",
-
-"&":"&amp;",
-
-"'":"&apos;",
-
-'"':"&quot;"
-
-}[c]));
-
+	return String(str)
+		.replace(/[<>&'"]/g,c=>({
+			"<":"&lt;",
+			">":"&gt;",
+			"&":"&amp;",
+			"'":"&apos;",
+			'"':"&quot;"
+		}[c]));
 }
