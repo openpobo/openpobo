@@ -19,7 +19,7 @@ export async function onRequest(context){
 		const kategori = post?.kategori || "Blog";
 
          const kategoriText = `🔥 ${kategori}`;
-         const badgeWidth = (kategoriText.length * 14) + 40;
+         const badgeWidth = (kategoriText.length * 18) + 60;
 
 		// ====================== AUTO CATEGORY COLOR ======================
 		const categoryColor = stringToColor(kategori);
