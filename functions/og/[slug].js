@@ -130,9 +130,9 @@ ${escapeXML(kategoriText)}
 <!-- Brand Top Right -->
 <rect
 x="760"
-y="45"
+y="58"
 width="360"
-height="60"
+height="64"
 rx="18"
 fill="rgba(255,255,255,0.08)"
 stroke="rgba(255,255,255,0.08)"
@@ -140,7 +140,7 @@ stroke="rgba(255,255,255,0.08)"
 
 <text
 x="790"
-y="84"
+y="100"
 fill="white"
 font-size="34"
 font-weight="bold"
@@ -174,15 +174,15 @@ opacity="0.9"
 <!-- Right Icon -->
 <circle
 cx="980"
-cy="340"
+cy="330"
 r="120"
 fill="rgba(255,255,255,0.08)"
 />
 
 <text
-x="930"
-y="375"
-font-size="90">
+x="935"
+y="368"
+font-size="88">
 ${logo}
 </text>
 
