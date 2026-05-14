@@ -3,39 +3,26 @@ import { getPosts } from "../lib/api";
 import { SITE, canonical, cardImage, postUrl } from "../lib/config";
 
 export async function onRequest(context){
-try{
+	try{
+		const reqUrl = new URL(context.request.url);
+		const page = parseInt(reqUrl.searchParams.get("page")) || 1;
 
-const reqUrl = new URL(context.request.url);
-const page = parseInt(reqUrl.searchParams.get("page")) || 1;
+		const posts = await getPosts();
 
-const posts = await getPosts();
+		const perPage = 12;
+		const totalPage = Math.ceil(posts.length / perPage);
 
-const perPage = 12;
-const totalPage = Math.ceil(posts.length / perPage);
+		const start = (page - 1) * perPage;
+		const currentPosts = posts.slice(start,start + perPage);
 
-const start = (page - 1) * perPage;
-const currentPosts = posts.slice(start,start + perPage);
+		const grid = currentPosts.map(p=>`<div class="card"><a href="${postUrl(p)}">${cardImage(`/og/${p.slug}`,p.title)}<h3>${p.title}</h3></a></div>`).join("");
 
-const grid = currentPosts.map(p => `
-<div class="card">
-<a href="${postUrl(p)}">
-${cardImage(`/og/${p.slug}`,p.title)}
-<h3>${p.title}</h3>
-</a>
-</div>
-`).join("");
-
-return layout({
-title:SITE.name,
-description:SITE.description,
-
-canonical:canonical(
-page > 1 ? "/?page=" + page : "/"
-),
-
-schema:`
+		return layout({
+			title:SITE.name,
+			description:SITE.description,
+			canonical:canonical(page > 1 ? "/?page=" + page : "/"),
+			schema:`
 ${page > 1 ? '<meta name="robots" content="noindex,follow">' : ""}
-
 <script type="application/ld+json">
 {
 "@context":"https://schema.org",
@@ -45,8 +32,7 @@ ${page > 1 ? '<meta name="robots" content="noindex,follow">' : ""}
 }
 </script>
 `,
-
-content:`
+			content:`
 <div class="hero">
 <h1>🚀 ${SITE.name}</h1>
 <p>Artikel SEO dan teknologi terbaru</p>
@@ -62,13 +48,7 @@ content:`
 </div>
 </section>
 
-<input
-class="search"
-id="search"
-type="search"
-placeholder="Cari artikel..."
-autocomplete="off"
->
+<input class="search" id="search" type="search" placeholder="Cari artikel..." autocomplete="off">
 
 <div id="results"></div>
 
@@ -82,54 +62,40 @@ ${pagination(page,totalPage)}
 
 ${searchScript()}
 `
-});
-
-}catch(e){
-
-return new Response(
-"Error: " + e.message,
-{ status:500 }
-);
-
-}
+		});
+	}catch(e){
+		return new Response("Error: " + e.message,{ status:500 });
+	}
 }
 
 function pagination(current,total){
+	if(total <= 1) return "";
 
-if(total <= 1) return "";
+	let html = `<div class="pagination">`;
 
-let html = `<div class="pagination">`;
+	const group = Math.floor((current - 1) / 5);
+	const start = group * 5 + 1;
+	const end = Math.min(start + 4,total);
 
-const group = Math.floor((current - 1) / 5);
-const start = group * 5 + 1;
-const end = Math.min(start + 4,total);
+	if(start > 1){
+		html += `<a href="/?page=${start - 1}">«</a>`;
+	}
 
-if(start > 1){
-html += `<a href="/?page=${start - 1}">«</a>`;
-}
+	for(let i = start; i <= end; i++){
+		html += `<a href="/?page=${i}" class="${i === current ? "active" : ""}">${i}</a>`;
+	}
 
-for(let i = start; i <= end; i++){
-html += `
-<a
-href="/?page=${i}"
-class="${i === current ? "active" : ""}">
-${i}
-</a>
-`;
-}
+	if(end < total){
+		html += `<a href="/?page=${end + 1}">»</a>`;
+	}
 
-if(end < total){
-html += `<a href="/?page=${end + 1}">»</a>`;
-}
+	html += `</div>`;
 
-html += `</div>`;
-
-return html;
+	return html;
 }
 
 function searchScript(){
-
-return `
+	return `
 <style>
 #results{
 margin:14px 0 24px;
@@ -179,19 +145,11 @@ timer = setTimeout(async()=>{
 
 try{
 
-const res = await fetch(
-"/search?q=" + encodeURIComponent(q)
-);
+const res = await fetch("/search?q=" + encodeURIComponent(q));
 
 const data = await res.json();
 
-results.innerHTML = data.map(d=>\`
-<a
-class="search-item"
-href="/\${d.kategori}/\${d.slug}">
-<h4>\${d.title}</h4>
-</a>
-\`).join("");
+results.innerHTML = data.map(d=>\`<a class="search-item" href="/\${d.kategori}/\${d.slug}"><h4>\${d.title}</h4></a>\`).join("");
 
 }catch{
 
