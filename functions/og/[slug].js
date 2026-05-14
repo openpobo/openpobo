@@ -18,6 +18,9 @@ export async function onRequest(context){
 		const title = post?.title || formatSlug(slug);
 		const kategori = post?.kategori || "Blog";
 
+         const kategoriText = `🔥 ${kategori}`;
+         const badgeWidth = (kategoriText.length * 14) + 40;
+
 		// ====================== AUTO CATEGORY COLOR ======================
 		const categoryColor = stringToColor(kategori);
 
@@ -108,7 +111,7 @@ x="90"
 y="70"
 rx="18"
 ry="18"
-width="240"
+width="${badgeWidth}"
 height="56"
 fill="${categoryColor}"
 opacity="0.9"
@@ -121,7 +124,7 @@ fill="white"
 font-size="26"
 font-weight="bold"
 font-family="sans-serif">
-🔥 ${escapeXML(kategori)}
+${escapeXML(kategoriText)}
 </text>
 
 <!-- Brand Top Right -->
