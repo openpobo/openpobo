@@ -36,17 +36,11 @@ export async function onRequest(context){
 		const posts = await getPosts();
 
 		const related = posts
-
 			.filter(p=>
-
 				sanitizeSlug(p.slug) !== slug &&
-
 				sanitizeSlug(p.kategori) === kategori
-
 			)
-
 			.sort(() => 0.5 - Math.random())
-
 			.slice(0,6);
 
 		// ====================== AUTO INTERNAL LINK ======================
@@ -154,25 +148,17 @@ ${postImage(
 	post.title
 )}
 
-<h1>
-${post.title}
-</h1>
+<h1>${post.title}</h1>
 
-<p>
-⏱ ${read} min read
-</p>
+<p>⏱ ${read} min read</p>
 
 <div class="post-content">
-
 ${post.content}
-
 </div>
 
 </article>
 
-<h3>
-Artikel Terkait
-</h3>
+<h3>Artikel Terkait</h3>
 
 <div class="grid">
 
@@ -187,9 +173,7 @@ ${cardImage(
 	p.title
 )}
 
-<h4>
-${p.title}
-</h4>
+<h4>${p.title}</h4>
 
 </a>
 
