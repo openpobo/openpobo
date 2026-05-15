@@ -25,9 +25,74 @@ export async function onRequest(context){
 			sanitizeSlug(p.kategori) === kategori
 		).sort(() => 0.5 - Math.random()).slice(0,6);
 
-		// ====================== AUTO INTERNAL LINK ======================
-		post.content = autoLink(post.content,related);
+// ====================== AUTO INTERNAL LINK ======================
+post.content = autoLink(post.content,related);
 
+// ====================== AUTO TOC ======================
+const tocData = generateTOC(post.content);
+
+post.content = tocData.html;
+
+// ====================== AUTO TOC ======================
+function generateTOC(content = ""){
+	if(!content){
+		return {
+			html:content,
+			toc:""
+		};
+	}
+
+	const headings = [];
+
+	const html = content.replace(
+		/<h([2-3])>(.*?)<\/h\1>/gi,
+		(match,level,text)=>{
+			const cleanText = stripHTML(text).trim();
+
+			const id = sanitizeSlug(cleanText);
+
+			headings.push({
+				level:Number(level),
+				text:cleanText,
+				id
+			});
+
+			return `<h${level} id="${id}">${text}</h${level}>`;
+		}
+	);
+
+	if(!headings.length){
+		return {
+			html,
+			toc:""
+		};
+	}
+
+	const toc = `
+<details class="toc">
+<summary class="toc-title">
+<span>📑 Daftar Isi</span>
+<span class="toc-toggle"></span>
+</summary>
+
+<ul>
+${headings.map(h=>`
+<li class="lv-${h.level}">
+<a href="#${h.id}">
+${h.text}
+</a>
+</li>
+`).join("")}
+</ul>
+
+</details>
+`;
+
+	return {
+		html,
+		toc
+	};
+}
 		// ====================== SEO ======================
 		const read = readingTime(post.content);
 		const desc = stripHTML(post.content).slice(0,160);
@@ -117,7 +182,7 @@ ${breadcrumb}
 <p class="meta"> ⏱ ${read} min read </p>
 </header>
 ${postImage(og,post.title)}
-
+${tocData.toc}
 <div class="post-content">
 ${post.content}
 </div>
