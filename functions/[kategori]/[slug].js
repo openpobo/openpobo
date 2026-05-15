@@ -127,7 +127,7 @@ ${post.content}
 </div>
 </article>
 
-
+<section class="related">
 <h3>Artikel Terkait</h3>
 <div class="grid">
 ${related.map(p=>`
@@ -141,7 +141,9 @@ ${p.title}
 </div>
 
 `).join("")}
+
 </div>
+</section>
 `
 		});
 	}catch(e){
