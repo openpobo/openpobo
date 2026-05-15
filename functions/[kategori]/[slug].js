@@ -110,10 +110,12 @@ ${post.title}
 
 
 <article class="post">
+<header class="post-header">
 ${breadcrumb}
 <h1>${post.title} </h1>
+<p class="meta"> ⏱ ${read} min read </p>
+</header>
 ${postImage(og,post.title)}
-<p> ⏱ ${read} min read </p>
 
 <div class="post-content">
 ${post.content}
