@@ -23,6 +23,7 @@ export async function onRequest(context){
 
 	// ====================== RENDER ======================
 	return layout({
+		page: "category",
 		title:"Kategori " + safeSlug,
 		description:"Kategori " + safeSlug,
 		canonical:canonical(page > 1 ? "/kategori/" + safeSlug + "?page=" + page : "/kategori/" + safeSlug),
