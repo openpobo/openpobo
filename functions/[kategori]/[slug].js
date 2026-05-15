@@ -107,9 +107,11 @@ ${post.title}
 			image:og,
 			schema,
 			content:`
-${breadcrumb}
+
 
 <article class="post">
+${breadcrumb}
+
 ${postImage(og,post.title)}
 
 <h1>
@@ -125,10 +127,8 @@ ${post.content}
 </div>
 </article>
 
-<h3>
-Artikel Terkait
-</h3>
-
+<div class="post">
+<h3>Artikel Terkait</h3>
 <div class="grid">
 ${related.map(p=>`
 <div class="card">
@@ -138,6 +138,7 @@ ${cardImage(`/og/${sanitizeSlug(p.slug)}`,p.title)}
 ${p.title}
 </h4>
 </a>
+</div>
 </div>
 `).join("")}
 </div>
