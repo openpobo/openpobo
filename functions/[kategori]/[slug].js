@@ -100,6 +100,7 @@ ${post.title}
 
 		// ====================== RENDER ======================
 		return layout({
+			page: "post",
 			post,
 			title:post.title,
 			description:desc,
