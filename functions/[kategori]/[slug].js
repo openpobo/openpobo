@@ -111,16 +111,9 @@ ${post.title}
 
 <article class="post">
 ${breadcrumb}
-
+<h1>${post.title} </h1>
 ${postImage(og,post.title)}
-
-<h1>
-${post.title}
-</h1>
-
-<p>
-⏱ ${read} min read
-</p>
+<p> ⏱ ${read} min read </p>
 
 <div class="post-content">
 ${post.content}
