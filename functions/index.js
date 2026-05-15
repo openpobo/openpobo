@@ -106,15 +106,15 @@ gap:10px;
 .search-item{
 display:block;
 padding:14px;
-border:1px solid #e2e8f0;
+border:1px solid var(--border);
 border-radius:12px;
-background:#fff;
+background:var(--muted);
 color:#0f172a;
 text-decoration:none;
 }
 
 .search-item:hover{
-border-color:#4f46e5;
+border-color:var(--border);
 }
 
 .search-item h4{
