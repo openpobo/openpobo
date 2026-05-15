@@ -127,7 +127,7 @@ ${post.content}
 </div>
 </article>
 
-<div class="post">
+
 <h3>Artikel Terkait</h3>
 <div class="grid">
 ${related.map(p=>`
@@ -139,7 +139,7 @@ ${p.title}
 </h4>
 </a>
 </div>
-</div>
+
 `).join("")}
 </div>
 `
