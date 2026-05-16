@@ -25,8 +25,7 @@ export async function onRequest(context){
 			sanitizeSlug(p.kategori) === kategori
 		).sort(() => 0.5 - Math.random()).slice(0,6);
 
-// ====================== AUTO INTERNAL LINK ======================
-post.content = autoLink(post.content,related);
+
 
 // ====================== AUTO TOC ======================
 const tocData = generateTOC(post.content);
@@ -214,53 +213,3 @@ ${p.title}
 	}
 }
 
-// ====================== AUTO LINK ======================
-function autoLink(content = "",related = []){
-	if(!content || !related.length){
-		return content;
-	}
-
-	const MAX_LINK = 8;
-	let total = 0;
-
-	const parts = content.split(/(<[^>]+>)/g);
-
-	return parts.map(part=>{
-		if(part.startsWith("<")){
-			return part;
-		}
-
-		let text = part;
-
-		for(const p of related){
-			if(total >= MAX_LINK){
-				break;
-			}
-
-			const title = String(p.title || "").trim();
-			const slug = sanitizeSlug(p.slug || "");
-			const kategori = sanitizeSlug(p.kategori || "");
-
-			if(!title || !slug){
-				continue;
-			}
-
-			const keyword = title.split(" ").slice(0,2).join(" ").toLowerCase();
-
-			if(!keyword || keyword.length < 4){
-				continue;
-			}
-
-			const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
-
-			const regex = new RegExp(`\\b(${escaped})\\b`,"i");
-
-			if(regex.test(text)){
-				text = text.replace(regex,`<a href="/${kategori}/${slug}">$1</a>`);
-				total++;
-			}
-		}
-
-		return text;
-	}).join("");
-}
