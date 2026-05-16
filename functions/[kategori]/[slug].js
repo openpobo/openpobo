@@ -163,7 +163,7 @@ ${post.title}
 `;
 
 		// ====================== RENDER ======================
-		return layout({
+		return await layout({
 			page: "post",
 			post,
 			title:post.title,
