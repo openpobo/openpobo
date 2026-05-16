@@ -17,7 +17,7 @@ export async function onRequest(context){
 
 		const grid = currentPosts.map(p=>`<div class="card"><a href="${postUrl(p)}">${cardImage(`/og/${p.slug}`,p.title)}<h3>${p.title}</h3></a></div>`).join("");
 
-		return layout({
+		return await layout({
 			page: "home",
 			title:SITE.name,
 			description:SITE.description,
