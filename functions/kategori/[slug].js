@@ -22,7 +22,7 @@ export async function onRequest(context){
 	const grid = currentPosts.map(p=>`<div class="card"><a href="/${sanitizeSlug(p.kategori)}/${sanitizeSlug(p.slug)}">${cardImage(`/og/${sanitizeSlug(p.slug)}`,p.title)}<h3>${p.title}</h3></a></div>`).join("");
 
 	// ====================== RENDER ======================
-	return layout({
+	return await layout({
 		page: "category",
 		title:"Kategori " + safeSlug,
 		description:"Kategori " + safeSlug,
